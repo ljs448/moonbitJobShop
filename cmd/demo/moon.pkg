@@ -1,0 +1,5 @@
+import {
+  "yhsrtty/moonbitJobShop/src" @jobshop,
+}
+
+pkgtype(kind: "executable")
