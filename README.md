@@ -38,8 +38,8 @@ let report = @jobshop.summarize(schedule, jobs, machines)
 CI 使用 MoonBit 官方安装脚本，并执行格式、警告、接口信息、普通测试、native 测试和 demo CLI 检查。提交历史按功能和文档阶段递进，便于评审追踪公开开发过程。
 
 ```bash
-moon fmt --deny-warn
-moon info --deny-warn
+moon fmt --check
+moon info
 moon check --deny-warn
 moon test --deny-warn
 moon test --target native --deny-warn
