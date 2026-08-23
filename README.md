@@ -102,15 +102,6 @@ moon test --target all --deny-warn
 moon info
 ```
 
-生产 MoonBit 源码规模和测试规模可用以下命令核验，不包含构建产物：
-
-当前仓库统计：生产源码 6693 行，测试源码 837 行；统计口径为 `src/*.mbt`，并从生产统计中排除 `*_test.mbt`。
-
-```powershell
-$prod = (Get-ChildItem src -Filter *.mbt | Where-Object {$_.Name -notlike '*_test.mbt'} | Get-Content | Measure-Object -Line).Lines
-$tests = (Get-ChildItem src -Filter '*_test.mbt' | Get-Content | Measure-Object -Line).Lines
-```
-
 ## CI
 
 `.github/workflows/check.yml` 在 Ubuntu、macOS 和 Windows 上安装 stable MoonBit，执行格式检查、`moon check --target all`、普通/native 测试、覆盖率摘要、接口信息检查以及 demo/benchmark CLI。提交和 Pull Request 都会触发；本地命令与 CI 保持一致。

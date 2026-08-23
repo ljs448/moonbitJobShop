@@ -158,3 +158,39 @@ test "operational ledger is complete and internally consistent" {
   assert_true(ledger_machine_table(ledger).contains("machine"))
   assert_true(ledger_checksum(ledger) != "")
 }
+
+///|
+test "boundary matrix reports invalid inputs without hiding failures" {
+  let results = run_boundary_checks()
+  assert_eq(results.length(), 4)
+  assert_true(boundary_summary(results).contains("cases=4"))
+  assert_true(boundary_result_table(results).contains("negative-duration"))
+  assert_true(robustness_signature(results).contains("empty"))
+  let trials = dispatch_trials(acceptance_fixture(), [
+    ("default", DispatchOptions::default()),
+    (
+      "due-date",
+      DispatchOptions::default().with_rule(DispatchRule::earliest_due_date()),
+    ),
+  ]).unwrap()
+  assert_eq(trials.length(), 2)
+  assert_true(trial_table(trials).contains("checksum"))
+}
+
+///|
+test "machine preferences and contracts validate real schedules" {
+  let input = acceptance_fixture()
+  let preferences = machine_preference_matrix(input).unwrap()
+  let repeated = machine_preference_matrix(input).unwrap()
+  assert_eq(preferences.length(), input.machines.length())
+  assert_true(preference_is_stable(preferences, repeated))
+  assert_true(machine_preference_summary(preferences).contains("candidates=3"))
+  assert_true(
+    machine_preference_table(preferences).contains("preferred_machine"),
+  )
+  let schedule = dispatch(input).unwrap()
+  let checks = schedule_contracts(schedule, input)
+  assert_true(all_contracts_pass(checks))
+  assert_true(contract_summary(checks).contains("all=true"))
+  assert_true(contract_report(schedule, input).contains("valid_schedule"))
+}
