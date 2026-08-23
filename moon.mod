@@ -1,10 +1,10 @@
-name = "yhsrtty/moonbitJobShop"
+name = "ljs448/moonbitJobShop"
 
-version = "0.1.0"
+version = "0.2.0"
 
 readme = "README.md"
 
-repository = "https://github.com/yhsrtty/moonbitJobShop"
+repository = "https://github.com/ljs448/moonbitJobShop"
 
 license = "MIT"
 

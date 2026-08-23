@@ -3,27 +3,77 @@ name: MoonBit quality gates
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
+  quality:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install MoonBit
+
+      - name: Install MoonBit on Unix
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Install MoonBit on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
+          "$HOME/.moon/bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Install native toolchain on Windows
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: mingw-w64-ucrt-x86_64-gcc
+
+      - name: Show toolchain
+        shell: bash
+        run: moon version --all
+
+      - name: Update dependencies
+        shell: bash
+        run: moon update
+
       - name: Format
+        shell: bash
         run: moon fmt --check
-      - name: Check
-        run: moon check --deny-warn
-      - name: Public API info
-        run: moon info
-      - name: Tests
-        run: moon test --deny-warn
-      - name: Native tests
-        run: moon test --target native --deny-warn
+
+      - name: Check all targets
+        shell: bash
+        run: moon check --target all --deny-warn
+
+      - name: Test all targets
+        shell: bash
+        run: moon test --target all --deny-warn
+
+      - name: Coverage summary
+        shell: bash
+        run: moon coverage analyze -- -f summary
+
+      - name: Public API stability
+        shell: bash
+        run: |
+          moon info
+          git diff --exit-code
+
       - name: Demo CLI
+        shell: bash
         run: moon run cmd/demo
+
+      - name: Benchmark CLI
+        shell: bash
+        run: moon run cmd/benchmark

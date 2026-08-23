@@ -143,8 +143,11 @@ pub fn ScheduleInput::validate(self : ScheduleInput) -> String? {
     if setup.duration < 0 {
       return Some("setup duration cannot be negative")
     }
+    if setup.from_group == "" || setup.to_group == "" {
+      return Some("setup groups must be non-empty")
+    }
   }
-  None
+  validate_unique_input_ids(self)
 }
 
 ///|

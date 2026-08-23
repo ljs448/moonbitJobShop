@@ -57,6 +57,7 @@ fn choose_machine(
   machines : Map[String, Int],
   groups : Map[String, String],
   setups : Array[SetupTime],
+  options : DispatchOptions,
 ) -> (String, Int) {
   let selected_id = operation.machine_ids[0]
   let selected_start = max_int(
@@ -68,9 +69,14 @@ fn choose_machine(
       operation.setup_group,
     ),
   )
+  let selected_calendar = calendar_for(options.calendars, selected_id)
+  let selected_start = selected_calendar.next_available(
+    max_int(selected_start, options.frozen_until),
+    operation.duration,
+  )
   let mut best = (selected_id, selected_start)
   for machine_id in operation.machine_ids[1:] {
-    let start = max_int(
+    let raw_start = max_int(
       ready_time,
       machines.get(machine_id).unwrap_or(0) +
       setup_duration(
@@ -78,6 +84,10 @@ fn choose_machine(
         groups.get(machine_id).unwrap_or(""),
         operation.setup_group,
       ),
+    )
+    let start = calendar_for(options.calendars, machine_id).next_available(
+      max_int(raw_start, options.frozen_until),
+      operation.duration,
     )
     if start < best.1 {
       best = (machine_id, start)
@@ -88,6 +98,18 @@ fn choose_machine(
 
 ///|
 pub fn dispatch(input : ScheduleInput) -> Result[Schedule, String] {
+  dispatch_with_options(input, DispatchOptions::default())
+}
+
+///|
+pub fn dispatch_with_options(
+  input : ScheduleInput,
+  options : DispatchOptions,
+) -> Result[Schedule, String] {
+  match options.validate() {
+    Some(message) => return Err(message)
+    None => ()
+  }
   match input.validate() {
     Some(message) => return Err(message)
     None => ()
@@ -95,7 +117,8 @@ pub fn dispatch(input : ScheduleInput) -> Result[Schedule, String] {
   let machine_available : Map[String, Int] = Map([])
   let machine_group : Map[String, String] = Map([])
   let scheduled : Array[ScheduledOperation] = []
-  for job in input.jobs {
+  let jobs = priority_jobs(input.jobs, options)
+  for job in jobs {
     let mut ready_time = 0
     for operation in job.operations {
       let (machine_id, start) = choose_machine(
@@ -104,6 +127,7 @@ pub fn dispatch(input : ScheduleInput) -> Result[Schedule, String] {
         machine_available,
         machine_group,
         input.setup_times,
+        options,
       )
       let end = start + operation.duration
       scheduled.push(
