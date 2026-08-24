@@ -9,6 +9,8 @@ jobs:
   quality:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    env:
+      MOONBIT_INSTALL_VERSION: "0.10.9+6e6c44045"
     strategy:
       fail-fast: false
       matrix:

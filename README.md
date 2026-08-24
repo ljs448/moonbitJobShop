@@ -18,7 +18,7 @@
 
 ## 快速开始
 
-需要 MoonBit stable 工具链（编译器 0.10.7 或更新版本）。
+需要 MoonBit stable 工具链（CI 固定使用编译器 `v0.10.9+6e6c44045`）。
 
 ```bash
 moon update
@@ -104,7 +104,7 @@ moon info
 
 ## CI
 
-`.github/workflows/check.yml` 在 Ubuntu、macOS 和 Windows 上安装 stable MoonBit，执行格式检查、`moon check --target all`、普通/native 测试、覆盖率摘要、接口信息检查以及 demo/benchmark CLI。提交和 Pull Request 都会触发；本地命令与 CI 保持一致。
+`.github/workflows/check.yml` 在 Ubuntu、macOS 和 Windows 上安装并固定 MoonBit `v0.10.9+6e6c44045`，执行格式检查、`moon check --target all`、普通/native 测试、覆盖率摘要、接口信息检查以及 demo/benchmark CLI。提交和 Pull Request 都会触发；本地命令与 CI 保持一致。
 
 ## 许可证
 
